@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TypeBattle — Multiplayer Typing Competition</title>
+    <meta name="description"
+        content="Race your fingers against classmates and friends in real-time. Fast, keyboard-focused, multiplayer typing competition.">
+
+    <!-- Google Fonts: Outfit (UI) and Roboto Mono (Typing Engine) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Roboto+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Canvas for Winner Confetti Celebration -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Top Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="brand" id="nav-brand" role="button" tabindex="0">
+                <div class="brand-icon">⚡</div>
+                <div class="brand-name">Type<span>Battle</span></div>
+            </div>
+
+            <div class="nav-links">
+                <button class="nav-btn active" id="nav-home-btn" data-view="view-home">Home</button>
+                <button class="nav-btn" id="nav-create-btn" data-view="view-create">Create Room</button>
+                <button class="nav-btn" id="nav-join-btn" data-view="view-join">Join Room</button>
+                <button class="nav-btn" id="nav-leaderboard-btn" data-view="view-leaderboard">Leaderboard</button>
+            </div>
+
+            <div class="nav-actions">
+                <div class="status-badge" id="sync-status-badge" title="Synchronization mode">
+                    <span class="status-pulse"></span>
+                    <span id="sync-status-text">Multi-Tab Active</span>
+                </div>
+                <button class="icon-btn" id="btn-sound-toggle" title="Toggle Typing Sounds" aria-label="Toggle Sound">
+                    <span id="sound-icon">🔊</span>
+                </button>
+                <button class="icon-btn" id="btn-firebase-modal" title="Firebase Settings" aria-label="Settings">
+                    ⚙️
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Application Views Container -->
+    <main class="app-main">
+
+        <!-- ============================================== -->
+        <!-- VIEW 1: HOMEPAGE                               -->
+        <!-- ============================================== -->
+        <section class="view active" id="view-home">
+            <div class="hero-section">
+                <div class="hero-tag">🔥 Real-time Multiplayer Typing Race</div>
+                <h1 class="hero-title">Race Your Fingers.</h1>
+                <p class="hero-subtitle">
+                    Challenge your classmates. Type faster. Win together. A distraction-free,
+                    Monkeytype-inspired battleground for speed typists.
+                </p>
+
+                <div class="hero-cta-group">
+                    <button class="btn btn-primary btn-lg" id="home-create-btn">
+                        <span class="btn-icon">➕</span> Create a Room
+                    </button>
+                    <button class="btn btn-secondary btn-lg" id="home-join-btn">
+                        <span class="btn-icon">🚀</span> Join a Room
+                    </button>
+                    <button class="btn btn-ghost btn-lg" id="home-practice-btn">
+                        <span class="btn-icon">⚡</span> Solo Practice
+                    </button>
+                </div>
+
+                <!-- Live Statistics Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="stat-total-racers">1,248</div>
+                        <div class="stat-label">Races Run</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="stat-active-rooms">14</div>
+                        <div class="stat-label">Active Competitions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="stat-top-wpm">138</div>
+                        <div class="stat-label">Top Record WPM</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="stat-avg-acc">98.4%</div>
+                        <div class="stat-label">Avg. Accuracy</div>
+                    </div>
+                </div>
+
+                <!-- How It Works Section -->
+                <div class="how-it-works">
+                    <h2 class="section-title">How TypeBattle Works</h2>
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">🚪</div>
+                            <h3>1. Create or Join</h3>
+                            <p>Host opens a classroom room with a 6-digit code. Set duration, difficulty, and optional
+                                password.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">⌨️</div>
+                            <h3>2. Synchronized Race</h3>
+                            <p>3-2-1 countdown launches all typists together on the exact same text. Live progress
+                                tracks reveal who's in the lead.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🏆</div>
+                            <h3>3. Crown the Champion</h3>
+                            <p>Monkeytype-grade WPM & accuracy stats. Podium celebration, confetti explosions, and
+                                hall-of-fame rankings.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- VIEW 2: CREATE ROOM                            -->
+        <!-- ============================================== -->
+        <section class="view" id="view-create">
+            <div class="form-container">
+                <div class="card form-card">
+                    <div class="card-header">
+                        <h2>Create a Competition Room</h2>
+                        <p>Set up the rules for your classmates or friends</p>
+                    </div>
+
+                    <form id="create-room-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="create-host-name">Your Nickname (Host / Teacher) *</label>
+                                <input type="text" id="create-host-name" placeholder="e.g. MasterSpeed or Mr. Anderson"
+                                    maxlength="18" required autofocus>
+                            </div>
+                            <div class="form-group">
+                                <label for="create-room-name">Room Title *</label>
+                                <input type="text" id="create-room-name" placeholder="e.g. CS101 Speed Sprint"
+                                    maxlength="24" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="create-password">Room Password (Optional)</label>
+                                <input type="password" id="create-password" placeholder="Leave blank for public room"
+                                    maxlength="16">
+                            </div>
+                            <div class="form-group">
+                                <label for="create-max-players">Max Players</label>
+                                <select id="create-max-players">
+                                    <option value="5">5 Players</option>
+                                    <option value="10">10 Players</option>
+                                    <option value="20" selected>20 Players (Recommended)</option>
+                                    <option value="30">30 Players (Classroom)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Typing Duration</label>
+                            <div class="btn-selector" id="duration-selector">
+                                <button type="button" class="select-option" data-val="15">15s</button>
+                                <button type="button" class="select-option active" data-val="30">30s</button>
+                                <button type="button" class="select-option" data-val="60">60s</button>
+                                <button type="button" class="select-option" data-val="120">120s</button>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Difficulty</label>
+                                <div class="btn-selector" id="difficulty-selector">
+                                    <button type="button" class="select-option active" data-val="easy">Easy</button>
+                                    <button type="button" class="select-option" data-val="medium">Medium</button>
+                                    <button type="button" class="select-option" data-val="hard">Hard</button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Word Source</label>
+                                <div class="btn-selector" id="source-selector">
+                                    <button type="button" class="select-option active" data-val="words">Random
+                                        Words</button>
+                                    <button type="button" class="select-option" data-val="paragraph">Paragraphs</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-ghost" id="create-cancel-btn">Cancel</button>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                🚀 Launch Room Lobby
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- VIEW 3: JOIN ROOM                              -->
+        <!-- ============================================== -->
+        <section class="view" id="view-join">
+            <div class="form-container">
+                <div class="card form-card">
+                    <div class="card-header">
+                        <h2>Join a Room</h2>
+                        <p>Enter the 6-character room code from your host</p>
+                    </div>
+
+                    <form id="join-room-form">
+                        <div class="form-group">
+                            <label for="join-nickname">Your Nickname *</label>
+                            <input type="text" id="join-nickname" placeholder="e.g. TurboTyper" maxlength="18" required
+                                autofocus>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="join-room-code">Room Code (6 Characters) *</label>
+                            <div class="code-input-wrapper">
+                                <input type="text" id="join-room-code" placeholder="TB-XXXX" maxlength="7"
+                                    class="code-input" required autocomplete="off">
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="join-password-group">
+                            <label for="join-password">Password (If Protected)</label>
+                            <input type="password" id="join-password" placeholder="Leave empty if none" maxlength="16">
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-ghost" id="join-cancel-btn">Back</button>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                Enter Room 🏁
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- VIEW 4: ROOM LOBBY                             -->
+        <!-- ============================================== -->
+        <section class="view" id="view-lobby">
+            <div class="lobby-container">
+                <!-- Lobby Header -->
+                <div class="card lobby-header-card">
+                    <div class="lobby-info">
+                        <div class="lobby-badge-row">
+                            <span class="badge badge-accent" id="lobby-status-badge">Waiting for Host</span>
+                            <span class="badge" id="lobby-duration-badge">⏱️ 30s</span>
+                            <span class="badge" id="lobby-diff-badge">⚡ Easy</span>
+                            <span class="badge" id="lobby-lock-badge">🔓 Public</span>
+                        </div>
+                        <h2 class="lobby-title" id="lobby-room-name">Classroom Speed Sprint</h2>
+                        <p class="lobby-subtitle">Share the code below with your classmates so they can join!</p>
+                    </div>
+
+                    <div class="lobby-code-box">
+                        <span class="code-label">Room Code</span>
+                        <div class="code-display" id="lobby-code-display">TB-7942</div>
+                        <button class="btn btn-secondary btn-sm" id="btn-copy-code" title="Click to copy room code">
+                            📋 Copy Code
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Lobby Main Body: Racers Grid & Controls -->
+                <div class="lobby-body">
+                    <div class="card lobby-players-card">
+                        <div class="card-header-flex">
+                            <h3>Connected Racers (<span id="lobby-player-count">1</span>/<span
+                                    id="lobby-max-players">20</span>)</h3>
+                            <div class="lobby-tools" id="lobby-host-tools">
+                                <button class="btn btn-ghost btn-sm" id="btn-add-bot"
+                                    title="Add a practice bot to test multiplayer racing!">
+                                    🤖 + Practice Bot
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="players-grid" id="lobby-players-grid">
+                            <!-- Injected dynamically by script.js -->
+                        </div>
+                    </div>
+
+                    <!-- Lobby Action Bar -->
+                    <div class="card lobby-actions-card">
+                        <div class="lobby-instructions" id="lobby-instructions-text">
+                            You are the <strong>Host</strong>. When everyone is ready, press Start Race!
+                        </div>
+                        <div class="lobby-buttons">
+                            <button class="btn btn-danger" id="btn-leave-lobby">Leave Room</button>
+                            <button class="btn btn-primary btn-lg" id="btn-start-race">
+                                🚀 Start Race!
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- VIEW 5: TYPING GAME RACE                       -->
+        <!-- ============================================== -->
+        <section class="view" id="view-game">
+            <div class="game-container">
+
+                <!-- Countdown Overlay (3, 2, 1, GO!) -->
+                <div class="countdown-overlay" id="countdown-overlay">
+                    <div class="countdown-number" id="countdown-number">3</div>
+                    <div class="countdown-sub">Get your fingers on home row!</div>
+                </div>
+
+                <!-- Live Race HUD: Timer & Typing Stats -->
+                <div class="game-hud">
+                    <div class="hud-item timer-hud">
+                        <span class="hud-label">TIME REMAINING</span>
+                        <span class="hud-value timer-val" id="hud-timer">30</span>
+                    </div>
+
+                    <div class="hud-stats-group">
+                        <div class="hud-item">
+                            <span class="hud-label">LIVE WPM</span>
+                            <span class="hud-value highlight" id="hud-wpm">0</span>
+                        </div>
+                        <div class="hud-item">
+                            <span class="hud-label">ACCURACY</span>
+                            <span class="hud-value" id="hud-accuracy">100%</span>
+                        </div>
+                        <div class="hud-item">
+                            <span class="hud-label">PROGRESS</span>
+                            <span class="hud-value" id="hud-progress">0%</span>
+                        </div>
+                        <div class="hud-item">
+                            <span class="hud-label">ERRORS</span>
+                            <span class="hud-value error-stat" id="hud-errors">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Multiplayer Race Tracks (Blooket / NitroType Style) -->
+                <div class="race-tracks-container" id="race-tracks-container">
+                    <div class="race-tracks-header">
+                        <span>🏁 LIVE RACE TRACK</span>
+                        <span id="race-leader-indicator">Leader: Loading...</span>
+                    </div>
+                    <div class="tracks-list" id="tracks-list">
+                        <!-- Dynamic track rows injected here -->
+                    </div>
+                </div>
+
+                <!-- Monkeytype-Style Typing Box -->
+                <div class="typing-box-wrapper" id="typing-box-wrapper">
+                    <!-- Caps Lock Warning -->
+                    <div class="caps-warning" id="caps-warning">⚠️ CAPS LOCK IS ON</div>
+
+                    <!-- The Words Box with Exact Pixel-Accurate Caret -->
+                    <div class="words-container" id="words-container" tabindex="0">
+                        <div class="caret" id="caret"></div>
+                        <div class="words-content" id="words-content">
+                            <!-- Words and letters dynamically injected -->
+                        </div>
+                    </div>
+
+                    <!-- Hidden input to capture keystrokes reliably on mobile and desktop -->
+                    <input type="text" id="hidden-typing-input" class="hidden-input" autocomplete="off"
+                        autocapitalize="off" spellcheck="false" inputmode="text">
+
+                    <div class="typing-footer-hint">
+                        <span>Tip: Press <kbd>Tab</kbd> + <kbd>Enter</kbd> to restart practice test anytime.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- VIEW 6: RESULTS SCREEN                         -->
+        <!-- ============================================== -->
+        <section class="view" id="view-results">
+            <div class="results-container">
+                <div class="results-banner">
+                    <div class="results-tag">🏁 RACE FINISHED</div>
+                    <h1 class="results-winner" id="results-winner-text">Winner: Champion!</h1>
+                    <p class="results-sub">Incredible speed on the keyboard! Here are the official standings.</p>
+                </div>
+
+                <!-- 1st, 2nd, 3rd Podium -->
+                <div class="podium-wrapper" id="podium-wrapper">
+                    <!-- Injected dynamically by script.js -->
+                </div>
+
+                <!-- Comprehensive Standings Table -->
+                <div class="card results-table-card">
+                    <div class="card-header-flex">
+                        <h3>Full Competition Standings</h3>
+                        <span class="text-muted" id="results-room-title">Room: CS101</span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Racer</th>
+                                    <th>WPM</th>
+                                    <th>Accuracy</th>
+                                    <th>Correct Chars</th>
+                                    <th>Errors</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="results-table-body">
+                                <!-- Standings rows injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Result Actions -->
+                <div class="results-actions">
+                    <button class="btn btn-secondary" id="btn-results-leave">Leave Room</button>
+                    <button class="btn btn-ghost" id="btn-results-lobby">Return to Lobby</button>
+                    <button class="btn btn-primary btn-lg" id="btn-results-play-again">
+                        🔄 Play Again
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- VIEW 7: LEADERBOARD                            -->
+        <!-- ============================================== -->
+        <section class="view" id="view-leaderboard">
+            <div class="leaderboard-container">
+                <div class="card leaderboard-card">
+                    <div class="card-header-flex">
+                        <div>
+                            <h2>Hall of Fame Leaderboard</h2>
+                            <p>All-time top speed records & classroom champions</p>
+                        </div>
+                        <div class="leaderboard-actions">
+                            <button class="btn btn-ghost btn-sm" id="btn-clear-leaderboard" title="Reset local records">
+                                🗑️ Reset Local Stats
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Player</th>
+                                    <th>Best WPM</th>
+                                    <th>Avg Accuracy</th>
+                                    <th>Wins</th>
+                                    <th>Total Races</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaderboard-table-body">
+                                <!-- Leaderboard rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ============================================== -->
+    <!-- FIREBASE & SETTINGS MODAL                      -->
+    <!-- ============================================== -->
+    <div class="modal-backdrop" id="firebase-modal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>⚙️ Multiplayer & Cloud Settings</h3>
+                <button class="modal-close" id="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-desc">
+                    TypeBattle operates out of the box with <strong>Multi-Tab Sync</strong> (using HTML5
+                    BroadcastChannel),
+                    allowing different windows or tabs on your computer to race against each other immediately!
+                </p>
+
+                <div class="settings-group">
+                    <label>Multiplayer Engine Mode</label>
+                    <div class="mode-badge-info">
+                        <span class="badge badge-accent" id="active-mode-label">Local Multi-Tab Demo (No setup
+                            needed)</span>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <label for="firebase-config-input">Optional: Firebase Realtime Database Config</label>
+                    <p class="text-sm text-muted">
+                        To synchronize across separate computers anywhere on the internet, paste your
+                        <code>firebaseConfig</code> JSON object below:
+                    </p>
+                    <textarea id="firebase-config-input" class="settings-textarea"
+                        placeholder='{ "apiKey": "...", "databaseURL": "https://...", "projectId": "..." }'></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" id="btn-firebase-disconnect">Reset to Multi-Tab Demo</button>
+                <button class="btn btn-primary" id="btn-firebase-save">Save & Connect</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Main JavaScript Application Engine -->
+    <script src="script.js"></script>
+</body>
+
+</html>
